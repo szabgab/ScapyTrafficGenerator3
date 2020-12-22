@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+function findSitePackagePath()
+{
+    for path in `python -c 'import site; print "\n".join(site.getsitepackages())'`;
+        do
+            if [ -d "$path" ]; then
+                value=`find $path -type f -iname "$1"`;
+                if [ $value ]; then
+                        echo $value
+                        break
+                fi
+            fi
+        done
+}
+
+
+while getopts "r:" o
+    do
+        case $o in
+            r |"--command"          )
+                COMMAND=$OPTARG
+                ;;
+        esac
+    done
+shift $((OPTIND-1))
+
+echo Type: $Type
+
+
+#lets set the base dir to the python path where our scripts are located
+#pushd /opt/TrafficGen
+
+
+packagePath=`findSitePackagePath ScapyPacketSender.py`
+echo running python $packagePath $COMMAND
+eval "python $packagePath $COMMAND"

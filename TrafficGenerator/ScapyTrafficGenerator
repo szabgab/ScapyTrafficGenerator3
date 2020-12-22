@@ -1,0 +1,124 @@
+#!/bin/bash
+
+function findSitePackagePath()
+{
+    for path in `python -c 'import site; print "\n".join(site.getsitepackages())'`;
+        do
+            if [ -d "$path" ]; then
+                value=`find $path -type f -iname "$1"`;
+                if [ $value ]; then
+                        echo $value
+                        break
+                fi
+            fi
+        done
+}
+
+
+flowcount=0
+tcpflowcount=0
+Type='None'
+while getopts "X:r:f:F:" o
+    do
+        case $o in
+            X |"--Type"             )
+                Type=$OPTARG
+                ;;
+            r |"--command"          )
+                COMMAND=$OPTARG
+                ;;
+            f |"--flows"          )
+                flowcount=$OPTARG
+                ;;
+            F |"--tcp-flows"          )
+                tcpflowcount=$OPTARG
+                ;;
+        esac
+    done
+shift $((OPTIND-1))
+
+echo Type: $Type
+
+
+#lets set the base dir to the python path where our scripts are located
+#pushd /opt/TrafficGen
+
+if [ $Type == 'http' ]; then
+     packagePath=`findSitePackagePath HTTP_TrafficGenerator.py`
+     #echo $packagePath
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+elif [ $Type == 'https' ]; then
+     packagePath=`findSitePackagePath  HTTPS_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+elif [ $Type == 'ftp' ]; then
+     packagePath=`findSitePackagePath  FTP_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+
+elif [ $Type == 'dns' ]; then
+     packagePath=`findSitePackagePath  DNS_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+elif [ $Type == 'dhcp' ]; then
+     packagePath=`findSitePackagePath  DHCP_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+elif [ $Type == 'icmp' ]; then
+     packagePath=`findSitePackagePath  ICMP_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+elif [ $Type == 'scan' ]; then
+     packagePath=`findSitePackagePath  PortScan_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+elif [ $Type == 'smtp' ]; then
+     packagePath=`findSitePackagePath  SMTP_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+elif [ $Type == 'template' ]; then
+     packagePath=`findSitePackagePath  Template_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+elif [ $Type == 'tcp' ]; then
+     packagePath=`findSitePackagePath  TCP_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+elif [ $Type == 'smb' ]; then
+     packagePath=`findSitePackagePath  SMB_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+
+elif [ $Type == 'smb2' ]; then
+     packagePath=`findSitePackagePath  SMB2_TrafficGenerator.py`
+     echo running python $packagePath $COMMAND
+     eval "python $packagePath $COMMAND"
+
+else
+    echo 'Type must be defined by -X. must be http, ftp, dns, or dhcp'
+fi
+
+if [ $tcpflowcount != 0 ]; then
+    eval "for i in {1..$tcpflowcount};  do echo replay; python TCP_TrafficGenerator.py $COMMAND; done"
+fi
+
+if [ $flowcount != 0 ]; then
+    eval "for i in {1..$flowcount};  do echo replay; python HTTP_TrafficGenerator.py -i eth2 -F none --host fakehost.com -u /fakeurl; done"
+fi
+
+
+
+
+
+
